@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  email     String    @unique
+  password  String
+  userName  String
+
+  comments Comment[]
+  categories Category[]
+
+  vote Vote[]
+
+  followedBy User[]  @relation("UserFollows")
+  following  User[]  @relation("UserFollows")
+
+  @@map("users")
+}
+
+model Vote {
+  userId Int 
+  categoryId Int
+  type String
+
+  user User @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@id([userId, categoryId])
+  @@map("votes")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title     String
+  description String
+  thumbnail String
+  userId Int
+
+  user User @relation(fields: [userId], references: [id])
+
+  comments Comment[]
+  vote Vote[]
+
+  @@map("categories")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content String
+  categoryId Int
+  userId Int
+
+  categories Category @relation(fields: [categoryId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("comments")
+}
